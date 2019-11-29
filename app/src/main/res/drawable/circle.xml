@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--<shape xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--    android:innerRadiusRatio="2"-->
+<!--    android:shape="ring"-->
+<!--    android:thicknessRatio="1"-->
+<!--    android:useLevel="false"-->
+<!--    >-->
+
+
+<!--    <stroke-->
+<!--    android:width="4dp"-->
+<!--        android:color="#7b3086"-->
+<!--        />-->
+
+<!--    <gradient-->
+<!--        android:type="radial"-->
+<!--        android:gradientRadius="2dp"-->
+<!--        android:endColor="@color/background"-->
+<!--        />-->
+<!--</shape>-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape
+            android:shape="oval" >
+
+            <gradient
+                android:centerX=".6"
+                android:centerY=".40"
+                android:endColor="@android:color/transparent"
+                android:gradientRadius="20"
+                android:startColor="@android:color/transparent"
+                android:type="radial" />
+
+            <stroke
+                android:width="4dp"
+                android:color="#7b3086" />
+
+            <size
+                android:height="100dp"
+                android:width="100dp" />
+
+        </shape>
+    </item>
+    </layer-list>
