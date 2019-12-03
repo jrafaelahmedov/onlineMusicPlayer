@@ -16,12 +16,13 @@ import com.example.onlinemusicappdemo.allBundle.AllBundle;
 import com.example.onlinemusicappdemo.lisener.ClickLisener;
 import com.example.onlinemusicappdemo.lisener.OnSingleClickListener;
 import com.example.onlinemusicappdemo.pojo.AllData;
+import com.squareup.picasso.Picasso;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
 
 
-public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Holder>  {
+public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Holder> {
 
     private Context context;
     private LayoutInflater inflater;
@@ -45,12 +46,17 @@ public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Hold
 
     @Override
     public void onBindViewHolder(@NonNull Holder holder, int position) {
-
+        Picasso.get().load(allData.get(position).getAlbum().getCover_medium()).into(holder.albumImageItem);
+        holder.albumNameItem.setText(allData.get(position).getArtist().getName());
+        holder.musicNameItem.setText(allData.get(position).getTitle());
     }
 
     @Override
     public int getItemCount() {
-        return allData.size();
+        if (allData != null) {
+            return allData.size();
+        }
+        return 0;
     }
 
     public class Holder extends RecyclerView.ViewHolder implements View.OnClickListener {

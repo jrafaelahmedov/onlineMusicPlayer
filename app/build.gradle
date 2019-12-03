@@ -30,6 +30,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
 }
 
 dependencies {
@@ -56,5 +60,6 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.16.18'
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation "com.android.support:design:29.0.0"
+    implementation 'com.tbuonomo.andrui:viewpagerdotsindicator:4.1.2'
 
 }

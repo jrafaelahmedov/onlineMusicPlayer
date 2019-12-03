@@ -15,6 +15,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -23,26 +24,34 @@ import com.example.onlinemusicappdemo.MainActivity;
 import com.example.onlinemusicappdemo.R;
 import com.example.onlinemusicappdemo.adapter.MusicItemAdapter;
 import com.example.onlinemusicappdemo.allBundle.AllBundle;
+import com.example.onlinemusicappdemo.constant.Constants;
 import com.example.onlinemusicappdemo.lisener.ClickLisener;
 import com.example.onlinemusicappdemo.pojo.AllData;
+import com.example.onlinemusicappdemo.pojo.ResponseBody;
 
 
+import java.util.ArrayList;
 import java.util.List;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class MusicListFragment extends Fragment implements ClickLisener {
 
     private MainActivity mContext;
     private RecyclerView musicListRecyclerView;
-    private TextView searchMusic;
+    private TextView searchMusic , toolbarTitle;
     private MusicItemAdapter adapter;
-    private List<AllData> allData;
+    private List<AllData> allData = new ArrayList<>();
+    private Toolbar toolbar;
 
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setupAdapter();
         setHasOptionsMenu(true);
+        setupAdapter();
     }
 
     @Nullable
@@ -51,11 +60,16 @@ public class MusicListFragment extends Fragment implements ClickLisener {
         View layout = inflater.inflate(R.layout.music_list, container, false);
         musicListRecyclerView = layout.findViewById(R.id.musicListRecyclerView);
         searchMusic = layout.findViewById(R.id.searchMusic);
+        toolbar =layout.findViewById(R.id.toolbarMusicPlay);
+        toolbarTitle = toolbar.findViewById(R.id.toolbarTitle);
+        mContext.setSupportActionBar(toolbar);
         return layout;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view,savedInstanceState);
+        setupToolbar();
         setupItems();
     }
 
@@ -81,6 +95,7 @@ public class MusicListFragment extends Fragment implements ClickLisener {
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String s) {
+                getMusicForName(s);
 //                adapter.getFilter().filter(s);
                 return false;
             }
@@ -100,10 +115,42 @@ public class MusicListFragment extends Fragment implements ClickLisener {
         }
     }
 
+    private void setupToolbar() {
+        mContext.setupToolbar(toolbar, 1);
+        toolbarTitle.setText("Player");
+        toolbarTitle.setVisibility(View.VISIBLE);
+    }
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         mContext = (MainActivity) context;
+    }
+
+
+    private void getMusicForName(String nameArtistOrMusic) {
+        Call<ResponseBody> call = Constants.SEARCH_MUSIC.getSearch(nameArtistOrMusic);
+        call.enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
+                if (response.isSuccessful()) {
+                    if (response.body() != null) {
+                        System.out.println("Rafael " + response.body());
+//                        allData = response.body().getAllData();
+                        if (allData!=null){
+                            allData.clear();
+                            allData.addAll(response.body().getAllData());
+                        }
+                        adapter.notifyDataSetChanged();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<ResponseBody> call, @NonNull Throwable t) {
+                System.out.println("Rafael error " + t.getMessage());
+            }
+        });
     }
 
 
@@ -122,7 +169,7 @@ public class MusicListFragment extends Fragment implements ClickLisener {
     public void onPositionClicked(AllBundle allBundle, String type) {
         switch (type) {
             case "musicItem": {
-
+                mContext.getPlayMusic(allBundle);
                 break;
             }
         }
