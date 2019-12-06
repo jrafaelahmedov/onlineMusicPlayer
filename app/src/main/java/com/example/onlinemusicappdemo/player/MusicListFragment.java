@@ -45,7 +45,6 @@ public class MusicListFragment extends Fragment implements ClickLisener {
     private MusicItemAdapter adapter;
     private List<AllData> allData = new ArrayList<>();
     private Toolbar toolbar;
-    private AVLoadingIndicatorView progressBar;
 
 
     @Override
@@ -63,7 +62,6 @@ public class MusicListFragment extends Fragment implements ClickLisener {
         musicListRecyclerView = layout.findViewById(R.id.musicListRecyclerView);
         searchMusic = layout.findViewById(R.id.searchMusic);
         toolbar = layout.findViewById(R.id.toolbarMusicPlay);
-        progressBar = layout.findViewById(R.id.progressbar);
         toolbarTitle = toolbar.findViewById(R.id.toolbarTitle);
         mContext.setSupportActionBar(toolbar);
         return layout;
@@ -172,9 +170,7 @@ public class MusicListFragment extends Fragment implements ClickLisener {
     public void onPositionClicked(AllBundle allBundle, String type) {
         switch (type) {
             case "musicItem": {
-                progressBar.setVisibility(View.VISIBLE);
                 mContext.getPlayMusic(allBundle);
-                progressBar.setVisibility(View.GONE);
                 break;
             }
         }

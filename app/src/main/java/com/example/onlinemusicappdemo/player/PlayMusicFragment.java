@@ -5,6 +5,7 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -15,6 +16,7 @@ import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -34,6 +36,7 @@ import com.example.onlinemusicappdemo.lisener.ClickLisener;
 import com.example.onlinemusicappdemo.lisener.OnSingleClickListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.squareup.picasso.Picasso;
+import com.wang.avi.AVLoadingIndicatorView;
 
 
 public class PlayMusicFragment extends Fragment implements View.OnClickListener, ClickLisener {
@@ -53,6 +56,8 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
     private RecyclerView recyclerViewTopIcons;
     private TopMiniIconsMusics adapter;
     private SeekBar seekBar;
+    private AVLoadingIndicatorView progressBar;
+    private ConstraintLayout musicPlayerLayout;
 
 
     @Override
@@ -92,6 +97,8 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
         musicName = layout.findViewById(R.id.musicName);
         retro_val_stick = layout.findViewById(R.id.val_stick);
         shuffleImage = layout.findViewById(R.id.suffleMusic);
+        musicPlayerLayout = layout.findViewById(R.id.musicPlayerLayout);
+        progressBar = layout.findViewById(R.id.progressbar);
         previousMusic = layout.findViewById(R.id.previousMusic);
         nextMusic = layout.findViewById(R.id.nextMusic);
         playIcon = layout.findViewById(R.id.btn_play);
@@ -108,6 +115,15 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
         return layout;
     }
 
+    private void progressBarVisible() {
+        musicPlayerLayout.setAlpha(0.5f);
+        progressBar.setVisibility(View.VISIBLE);
+    }
+
+    private void progressBarGone() {
+        musicPlayerLayout.setAlpha(1);
+        progressBar.setVisibility(View.GONE);
+    }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
@@ -133,13 +149,12 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
     }
 
     private void setImageValLayoutBackground(int position) {
+        progressBarVisible();
         Picasso.get().load(allBundle.getAllData().get(position).getAlbum().getCover_medium()).into(albumImage);
         albumName.setText(allBundle.getAllData().get(position).getTitle());
         musicName.setText(allBundle.getAllData().get(position).getArtist().getName());
         AUDIO_PATH = allBundle.getAllData().get(position).getPreview();
         onRadioClick();
-        rotateImage(retro_val_stick, 0, 30, 0.5f, 0f, 300, 0);
-        rotateLayout(val_Layout, 0, 360, 0.5f, 0.5f, 2000, Animation.INFINITE);
     }
 
     @Override
@@ -244,23 +259,50 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
 
     public void onRadioClick() {
         if (!isPLAYING) {
-            if (mediaPlayer!=null){
+
+            if (mediaPlayer != null) {
                 mediaPlayer.stop();
             }
             isPLAYING = true;
             playIcon.hide();
             pauseIcon.show();
-            Uri soundUri = Uri.parse(AUDIO_PATH);
+//            Uri soundUri = Uri.parse(AUDIO_PATH);
+            mediaPlayer = new MediaPlayer();
+            AsyncTask<String, String, String> mp3Play = new AsyncTask<String, String, String>() {
+                @Override
+                protected void onPreExecute() {
+                    super.onPreExecute();
+
+                }
+
+                @Override
+                protected String doInBackground(String... strings) {
+                    try {
+                        mediaPlayer.setDataSource(strings[0]);
+                        mediaPlayer.prepare();
+                    } catch (Exception e) {
+                    }
+                    return "";
+                }
+
+                @Override
+                protected void onPostExecute(String s) {
+                    if (!mediaPlayer.isPlaying()) {
+                        mediaPlayer.start();
+                        progressBarGone();
+                        rotateImage(retro_val_stick, 0, 30, 0.5f, 0f, 300, 0);
+                        rotateLayout(val_Layout, 0, 360, 0.5f, 0.5f, 2000, Animation.INFINITE);
+                    } else {
+                        mediaPlayer.pause();
+                        pauseIcon.hide();
+                        playIcon.show();
+                    }
+                    updateSeekBar();
+                }
+            };
+
+            mp3Play.execute(AUDIO_PATH);
             try {
-
-//                mediaPlayer = MediaPlayer.create(mContext, soundUri);
-                mediaPlayer = new MediaPlayer();
-                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                mediaPlayer.setDataSource(mContext, soundUri);
-                mediaPlayer.prepare();
-                mediaPlayer.start();
-
-                updateSeekBar();
 
                 mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                     @Override
@@ -278,6 +320,9 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
                         playIcon.show();
                         isPLAYING = false;
                         stopPlaying();
+                        getNextMusic();
+
+
                     }
                 });
                 mediaPlayer.setOnCompletionListener(mp -> {
@@ -285,6 +330,7 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
                     pauseIcon.hide();
                     rotateImage(retro_val_stick, 30, 0, 0.5f, 0f, 300, 0);
                     rotateLayout(val_Layout, 0, 0, 0.5f, 0.5f, 0, 0);
+                    getNextMusic();
                 });
             } catch (Exception e) {
                 System.out.println("Rafael cach ");
@@ -319,44 +365,65 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
         }
     }
 
+    private void musicValDefoultView() {
+        pauseIcon.hide();
+        playIcon.show();
+        rotateImage(retro_val_stick, 30, 0, 0.5f, 0f, 300, 0);
+        rotateLayout(val_Layout, 0, 0, 0.5f, 0.5f, 0, 0);
+
+    }
+
+    private void musicValToRotating() {
+        pauseIcon.show();
+        playIcon.hide();
+        rotateImage(retro_val_stick, 0, 30, 0.5f, 0f, 300, 0);
+        rotateLayout(val_Layout, 0, 360, 0.5f, 0.5f, 2000, Animation.INFINITE);
+
+    }
+
+    private void getNextMusic() {
+        int currentPosition = position + 1;
+        if (allBundle.getAllData().size() < currentPosition || allBundle.getAllData().size() == currentPosition) {
+            musicValDefoultView();
+            position = 0;
+            isPLAYING = false;
+            setImageValLayoutBackground(position);
+            toolbarTitle.setText(allBundle.getAllData().get(position).getTitle());
+        } else {
+            musicValDefoultView();
+            position = currentPosition;
+            isPLAYING = false;
+            setImageValLayoutBackground(position);
+            toolbarTitle.setText(allBundle.getAllData().get(position).getTitle());
+        }
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_pause: {
-                pauseIcon.hide();
-                playIcon.show();
                 mediaPlayer.pause();
-                rotateImage(retro_val_stick, 30, 0, 0.5f, 0f, 300, 0);
-                rotateLayout(val_Layout, 0, 0, 0.5f, 0.5f, 0, 0);
+                musicValDefoultView();
                 break;
             }
             case R.id.btn_play: {
-                playIcon.hide();
-                pauseIcon.show();
                 mediaPlayer.start();
-                rotateImage(retro_val_stick, 0, 30, 0.5f, 0f, 300, 0);
-                rotateLayout(val_Layout, 0, 360, 0.5f, 0.5f, 2000, Animation.INFINITE);
+                musicValToRotating();
                 break;
             }
             case R.id.nextMusic: {
-                int currentPosition = position + 1;
-                if (allBundle.getAllData().size() < currentPosition) {
-                    return;
-                } else {
-                    position = currentPosition;
-                    isPLAYING = false;
-                    setImageValLayoutBackground(currentPosition);
-                }
+                getNextMusic();
                 break;
             }
             case R.id.previousMusic: {
-                if (position==0){
+                if (position == 0) {
                     return;
                 }
                 int currentPosition = position - 1;
                 if (allBundle.getAllData().size() < currentPosition) {
                     return;
                 } else {
+                    musicValDefoultView();
                     position = currentPosition;
                     isPLAYING = false;
                     setImageValLayoutBackground(currentPosition);
