@@ -173,7 +173,7 @@ public class MusicListFragment extends Fragment implements ClickLisener {
         switch (type) {
             case "musicItem": {
                 progressBar.setVisibility(View.VISIBLE);
-//                mContext.getPlayMusic(allBundle);
+                mContext.getPlayMusic(allBundle);
                 progressBar.setVisibility(View.GONE);
                 break;
             }

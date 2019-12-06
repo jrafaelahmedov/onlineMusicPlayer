@@ -199,25 +199,25 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
-                android:id="@+id/forward"
+                android:id="@+id/nextMusic"
                 android:layout_width="15dp"
                 android:layout_height="15dp"
                 android:layout_marginEnd="20dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/right_arrow" />
+                app:srcCompat="@drawable/next" />
 
 
             <ImageView
-                android:id="@+id/backWard"
+                android:id="@+id/previousMusic"
                 android:layout_width="15dp"
                 android:layout_height="15dp"
                 android:layout_marginStart="20dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/left_arrows" />
+                app:srcCompat="@drawable/previous" />
 
 
         </androidx.constraintlayout.widget.ConstraintLayout>

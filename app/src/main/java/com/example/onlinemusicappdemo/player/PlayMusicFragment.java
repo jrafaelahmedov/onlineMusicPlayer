@@ -39,7 +39,7 @@ import com.squareup.picasso.Picasso;
 public class PlayMusicFragment extends Fragment implements View.OnClickListener, ClickLisener {
 
     private MainActivity mContext;
-    private ImageView albumImage, retro_val_stick, shuffleImage, backWardIcon, forWardIcon, replayIcon;
+    private ImageView albumImage, retro_val_stick, shuffleImage, previousMusic, nextMusic, replayIcon;
     private FloatingActionButton playIcon, pauseIcon;
     private TextView albumName, musicName, toolbarTitle, textViewTime;
     private Toolbar toolbar;
@@ -53,7 +53,6 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
     private RecyclerView recyclerViewTopIcons;
     private TopMiniIconsMusics adapter;
     private SeekBar seekBar;
-
 
 
     @Override
@@ -93,16 +92,18 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
         musicName = layout.findViewById(R.id.musicName);
         retro_val_stick = layout.findViewById(R.id.val_stick);
         shuffleImage = layout.findViewById(R.id.suffleMusic);
-        backWardIcon = layout.findViewById(R.id.backWard);
-        forWardIcon = layout.findViewById(R.id.forward);
+        previousMusic = layout.findViewById(R.id.previousMusic);
+        nextMusic = layout.findViewById(R.id.nextMusic);
         playIcon = layout.findViewById(R.id.btn_play);
+        nextMusic.setOnClickListener(OnSingleClickListener.wrap(this));
+        previousMusic.setOnClickListener(OnSingleClickListener.wrap(this));
         pauseIcon = layout.findViewById(R.id.btn_pause);
         pauseIcon.setOnClickListener(OnSingleClickListener.wrap(this));
         playIcon.setOnClickListener(OnSingleClickListener.wrap(this));
         replayIcon = layout.findViewById(R.id.replay);
 
         if (allBundle.getAllData().get(position).getPreview() != null && !allBundle.getAllData().get(position).getPreview().isEmpty()) {
-            setImageValLayoutBackground();
+            setImageValLayoutBackground(position);
         }
         return layout;
     }
@@ -131,7 +132,7 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
         recyclerViewTopIcons.setAdapter(adapter);
     }
 
-    private void setImageValLayoutBackground() {
+    private void setImageValLayoutBackground(int position) {
         Picasso.get().load(allBundle.getAllData().get(position).getAlbum().getCover_medium()).into(albumImage);
         albumName.setText(allBundle.getAllData().get(position).getTitle());
         musicName.setText(allBundle.getAllData().get(position).getArtist().getName());
@@ -243,7 +244,9 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
 
     public void onRadioClick() {
         if (!isPLAYING) {
-
+            if (mediaPlayer!=null){
+                mediaPlayer.stop();
+            }
             isPLAYING = true;
             playIcon.hide();
             pauseIcon.show();
@@ -333,6 +336,31 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
                 mediaPlayer.start();
                 rotateImage(retro_val_stick, 0, 30, 0.5f, 0f, 300, 0);
                 rotateLayout(val_Layout, 0, 360, 0.5f, 0.5f, 2000, Animation.INFINITE);
+                break;
+            }
+            case R.id.nextMusic: {
+                int currentPosition = position + 1;
+                if (allBundle.getAllData().size() < currentPosition) {
+                    return;
+                } else {
+                    position = currentPosition;
+                    isPLAYING = false;
+                    setImageValLayoutBackground(currentPosition);
+                }
+                break;
+            }
+            case R.id.previousMusic: {
+                if (position==0){
+                    return;
+                }
+                int currentPosition = position - 1;
+                if (allBundle.getAllData().size() < currentPosition) {
+                    return;
+                } else {
+                    position = currentPosition;
+                    isPLAYING = false;
+                    setImageValLayoutBackground(currentPosition);
+                }
                 break;
             }
         }
