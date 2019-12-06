@@ -28,7 +28,7 @@ import com.example.onlinemusicappdemo.constant.Constants;
 import com.example.onlinemusicappdemo.lisener.ClickLisener;
 import com.example.onlinemusicappdemo.pojo.AllData;
 import com.example.onlinemusicappdemo.pojo.ResponseBody;
-
+import com.wang.avi.AVLoadingIndicatorView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,10 +41,11 @@ public class MusicListFragment extends Fragment implements ClickLisener {
 
     private MainActivity mContext;
     private RecyclerView musicListRecyclerView;
-    private TextView searchMusic , toolbarTitle;
+    private TextView searchMusic, toolbarTitle;
     private MusicItemAdapter adapter;
     private List<AllData> allData = new ArrayList<>();
     private Toolbar toolbar;
+    private AVLoadingIndicatorView progressBar;
 
 
     @Override
@@ -58,9 +59,11 @@ public class MusicListFragment extends Fragment implements ClickLisener {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View layout = inflater.inflate(R.layout.music_list, container, false);
+
         musicListRecyclerView = layout.findViewById(R.id.musicListRecyclerView);
         searchMusic = layout.findViewById(R.id.searchMusic);
-        toolbar =layout.findViewById(R.id.toolbarMusicPlay);
+        toolbar = layout.findViewById(R.id.toolbarMusicPlay);
+        progressBar = layout.findViewById(R.id.progressbar);
         toolbarTitle = toolbar.findViewById(R.id.toolbarTitle);
         mContext.setSupportActionBar(toolbar);
         return layout;
@@ -68,7 +71,7 @@ public class MusicListFragment extends Fragment implements ClickLisener {
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view,savedInstanceState);
+        super.onViewCreated(view, savedInstanceState);
         setupToolbar();
         setupItems();
     }
@@ -137,7 +140,7 @@ public class MusicListFragment extends Fragment implements ClickLisener {
                     if (response.body() != null) {
                         System.out.println("Rafael " + response.body());
 //                        allData = response.body().getAllData();
-                        if (allData!=null){
+                        if (allData != null) {
                             allData.clear();
                             allData.addAll(response.body().getAllData());
                         }
@@ -169,7 +172,9 @@ public class MusicListFragment extends Fragment implements ClickLisener {
     public void onPositionClicked(AllBundle allBundle, String type) {
         switch (type) {
             case "musicItem": {
-                mContext.getPlayMusic(allBundle);
+                progressBar.setVisibility(View.VISIBLE);
+//                mContext.getPlayMusic(allBundle);
+                progressBar.setVisibility(View.GONE);
                 break;
             }
         }

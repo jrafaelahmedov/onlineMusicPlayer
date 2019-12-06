@@ -2,7 +2,6 @@ package com.example.onlinemusicappdemo.player;
 
 import android.animation.ObjectAnimator;
 import android.content.Context;
-import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
@@ -13,47 +12,48 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.RotateAnimation;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.viewpager.widget.ViewPager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.onlinemusicappdemo.MainActivity;
 import com.example.onlinemusicappdemo.R;
+import com.example.onlinemusicappdemo.adapter.TopMiniIconsMusics;
 import com.example.onlinemusicappdemo.allBundle.AllBundle;
+import com.example.onlinemusicappdemo.lisener.ClickLisener;
 import com.example.onlinemusicappdemo.lisener.OnSingleClickListener;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.squareup.picasso.Picasso;
-import com.tbuonomo.viewpagerdotsindicator.DotsIndicator;
 
-import java.io.IOException;
 
-public class PlayMusicFragment extends Fragment implements View.OnClickListener {
+public class PlayMusicFragment extends Fragment implements View.OnClickListener, ClickLisener {
 
     private MainActivity mContext;
     private ImageView albumImage, retro_val_stick, shuffleImage, backWardIcon, forWardIcon, replayIcon;
     private FloatingActionButton playIcon, pauseIcon;
-    private TextView albumName, musicName, toolbarTitle;
+    private TextView albumName, musicName, toolbarTitle, textViewTime;
     private Toolbar toolbar;
     private ConstraintLayout val_Layout;
     private AllBundle allBundle = new AllBundle();
     private int position;
     private String AUDIO_PATH = "";
     private MediaPlayer mediaPlayer;
-    private int playbackPosition = 0;
     private boolean isPLAYING;
     private ObjectAnimator anim;
-    private DotsIndicator dotsIndicator;
-    private ViewPager viewPager;
+    private RecyclerView recyclerViewTopIcons;
+    private TopMiniIconsMusics adapter;
+    private SeekBar seekBar;
+
 
 
     @Override
@@ -66,6 +66,7 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener 
                 position = allBundle.getPosition();
             }
         }
+        setupAdapter();
     }
 
     @Override
@@ -83,8 +84,10 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener 
         View layout = inflater.inflate(R.layout.play_music_fragment, container, false);
         val_Layout = layout.findViewById(R.id.valLayout);
         albumImage = layout.findViewById(R.id.albumImage);
+        seekBar = layout.findViewById(R.id.seekBar);
+        textViewTime = layout.findViewById(R.id.timeTextView);
         albumName = layout.findViewById(R.id.albumName);
-
+        recyclerViewTopIcons = layout.findViewById(R.id.recyclerViewTopIcons);
         toolbar = layout.findViewById(R.id.toolbarPlayMusic);
         toolbarTitle = toolbar.findViewById(R.id.toolbarTitle);
         musicName = layout.findViewById(R.id.musicName);
@@ -97,27 +100,35 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener 
         pauseIcon.setOnClickListener(OnSingleClickListener.wrap(this));
         playIcon.setOnClickListener(OnSingleClickListener.wrap(this));
         replayIcon = layout.findViewById(R.id.replay);
-//        dotsIndicator = (DotsIndicator) layout.findViewById(R.id.dots_indicator);
-//        viewPager = (ViewPager) layout.findViewById(R.id.view_pager);
-//        adapter = new ViewPagerAdapter();
-//        viewPager.setAdapter(adapter);
-//        dotsIndicator.setViewPager(viewPager);
+
         if (allBundle.getAllData().get(position).getPreview() != null && !allBundle.getAllData().get(position).getPreview().isEmpty()) {
             setImageValLayoutBackground();
         }
         return layout;
     }
 
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setupToolbar();
+        setupItems();
     }
 
     private void setupToolbar() {
         mContext.setupToolbar(toolbar, 1);
         toolbarTitle.setText(allBundle.getAllData().get(position).getTitle());
         toolbarTitle.setVisibility(View.VISIBLE);
+    }
+
+    private void setupAdapter() {
+        adapter = new TopMiniIconsMusics(mContext, allBundle.getAllData(), this);
+    }
+
+    private void setupItems() {
+        recyclerViewTopIcons.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false));
+        recyclerViewTopIcons.setHasFixedSize(true);
+        recyclerViewTopIcons.setAdapter(adapter);
     }
 
     private void setImageValLayoutBackground() {
@@ -167,34 +178,105 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener 
             anim.setInterpolator(new LinearInterpolator());
             anim.start();
         }
-//        if (repeatCount == 0) {
-//            imageView.getAnimation().cancel();
-//            return;
-//        }
-//        RotateAnimation rotate = new RotateAnimation(fromDegree, toDegree,
-//                RotateAnimation.RELATIVE_TO_SELF, pivotX,
-//                RotateAnimation.RELATIVE_TO_SELF, pivotY);
-//
-//        rotate.setRepeatCount(repeatCount);
-//        rotate.setRepeatMode(Animation.RESTART);
-//        rotate.setFillAfter(true);
-//        rotate.setDuration(duraction);
-//        rotate.setInterpolator(mContext, android.R.anim.linear_interpolator);
-//        imageView.startAnimation(rotate);
-
-
     }
+
+
+    private void updateSeekBar() {
+
+        try {
+            seekBar.setProgress(mediaPlayer.getCurrentPosition());
+            textViewTime.setText(milliSecondsToTimer(mediaPlayer.getCurrentPosition()));
+            seekBar.postDelayed(runnable, 100);
+        } catch (Exception e) {
+
+        }
+
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (mediaPlayer != null && fromUser) {
+                    mediaPlayer.seekTo(progress);
+                }
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
+    }
+
+
+    private String milliSecondsToTimer(long milliseconds) {
+        String finalTimerString = "";
+        String secondsString = "";
+
+        // Convert total duration into time
+        int hours = (int) (milliseconds / (1000 * 60 * 60));
+        int minutes = (int) (milliseconds % (1000 * 60 * 60)) / (1000 * 60);
+        int seconds = (int) ((milliseconds % (1000 * 60 * 60)) % (1000 * 60) / 1000);
+        // Add hours if there
+        if (hours > 0) {
+            finalTimerString = hours + ":";
+        }
+
+        // Prepending 0 to seconds if it is one digit
+        if (seconds < 10) {
+            secondsString = "0" + seconds;
+        } else {
+            secondsString = "" + seconds;
+        }
+
+        finalTimerString = finalTimerString + minutes + ":" + secondsString;
+
+        // return timer string
+        return finalTimerString;
+    }
+
+
+    Runnable runnable = this::updateSeekBar;
 
     public void onRadioClick() {
         if (!isPLAYING) {
+
             isPLAYING = true;
             playIcon.hide();
             pauseIcon.show();
             Uri soundUri = Uri.parse(AUDIO_PATH);
             try {
 
-                mediaPlayer = MediaPlayer.create(mContext, soundUri);
+//                mediaPlayer = MediaPlayer.create(mContext, soundUri);
+                mediaPlayer = new MediaPlayer();
+                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                mediaPlayer.setDataSource(mContext, soundUri);
+                mediaPlayer.prepare();
                 mediaPlayer.start();
+
+                updateSeekBar();
+
+                mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        /* show media player layout */
+                        seekBar.setMax(mediaPlayer.getDuration());
+                        updateSeekBar();
+                    }
+                });
+
+                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        pauseIcon.hide();
+                        playIcon.show();
+                        isPLAYING = false;
+                        stopPlaying();
+                    }
+                });
                 mediaPlayer.setOnCompletionListener(mp -> {
                     playIcon.show();
                     pauseIcon.hide();
@@ -251,6 +333,16 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener 
                 mediaPlayer.start();
                 rotateImage(retro_val_stick, 0, 30, 0.5f, 0f, 300, 0);
                 rotateLayout(val_Layout, 0, 360, 0.5f, 0.5f, 2000, Animation.INFINITE);
+                break;
+            }
+        }
+    }
+
+    @Override
+    public void onPositionClicked(AllBundle allBundle, String type) {
+        switch (type) {
+            case "musicItem": {
+                mContext.getPlayMusic(allBundle);
                 break;
             }
         }

@@ -60,6 +60,6 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok:1.16.18'
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation "com.android.support:design:29.0.0"
-    implementation 'com.tbuonomo.andrui:viewpagerdotsindicator:4.1.2'
-
+    implementation 'eu.long1:spacetablayout:1.0.4'
+    implementation 'com.wang.avi:library:2.1.3'
 }
