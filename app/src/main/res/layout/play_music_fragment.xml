@@ -9,17 +9,6 @@
     android:id="@+id/musicPlayerLayout"
     >
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerViewTopIcons"
-        android:layout_width="match_parent"
-        android:layout_height="50sp"
-        android:layout_marginStart="8dp"
-        android:layout_marginEnd="8dp"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/toolbarPlayMusic" />
-
 
     <include
         android:id="@+id/toolbarPlayMusic"
@@ -29,69 +18,23 @@
         app:layout_constraintTop_toTopOf="parent" />
 
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/musicListRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@color/background"
+        app:layout_constraintTop_toBottomOf="@+id/toolbarPlayMusic"
+        tools:layout_editor_absoluteX="8dp" />
+
+    <com.tbuonomo.creativeviewpager.CreativeViewPager
+        android:id="@+id/creativeViewPagerView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:background="@color/background"
+        app:contentHorizontalPadding="50dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:imagesSize="50dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/recyclerViewTopIcons">
-
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/valLayout"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
-
-
-            <ImageView
-                android:id="@+id/albumImage"
-                android:layout_width="250dp"
-                android:layout_height="250dp"
-                android:padding="70dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@mipmap/ic_launcher" />
-
-
-            <ImageView
-                android:layout_width="250dp"
-                android:layout_height="250dp"
-                android:foreground="@drawable/circle"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintVertical_bias="0.0"
-                app:srcCompat="@drawable/retro_val" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-        <ImageView
-            android:id="@+id/val_stick"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="50dp"
-            android:rotation="-30"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/valLayout"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/retro_val_stick" />
-
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-
+        app:layout_constraintTop_toBottomOf="@+id/musicListRecyclerView"/>
 
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -100,7 +43,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/constraintLayout">
+        app:layout_constraintTop_toBottomOf="@+id/creativeViewPagerView">
 
 
         <TextView
@@ -149,7 +92,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
-        android:text="3:20"
+        android:text="0:00"
         android:textColor="#414141"
         app:layout_constraintBottom_toBottomOf="@+id/seekBar"
         app:layout_constraintEnd_toEndOf="parent"
@@ -257,10 +200,10 @@
         android:id="@+id/progressbar"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        app:indicatorName="BallScaleIndicator"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:indicatorName="BallScaleMultipleIndicator"
+        app:layout_constraintBottom_toBottomOf="@+id/creativeViewPagerView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/musicListRecyclerView" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

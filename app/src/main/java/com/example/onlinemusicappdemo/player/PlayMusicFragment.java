@@ -34,8 +34,10 @@ import com.example.onlinemusicappdemo.adapter.TopMiniIconsMusics;
 import com.example.onlinemusicappdemo.allBundle.AllBundle;
 import com.example.onlinemusicappdemo.lisener.ClickLisener;
 import com.example.onlinemusicappdemo.lisener.OnSingleClickListener;
+import com.example.onlinemusicappdemo.utility.CustomViewPagerAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.squareup.picasso.Picasso;
+import com.tbuonomo.creativeviewpager.CreativeViewPager;
 import com.wang.avi.AVLoadingIndicatorView;
 
 
@@ -53,8 +55,8 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
     private MediaPlayer mediaPlayer;
     private boolean isPLAYING;
     private ObjectAnimator anim;
-    private RecyclerView recyclerViewTopIcons;
-    private TopMiniIconsMusics adapter;
+//    private RecyclerView recyclerViewTopIcons;
+    private CustomViewPagerAdapter adapter;
     private SeekBar seekBar;
     private AVLoadingIndicatorView progressBar;
     private ConstraintLayout musicPlayerLayout;
@@ -68,7 +70,9 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
             allBundle = getArguments().getParcelable("allBundle");
             if (allBundle != null) {
                 position = allBundle.getPosition();
+                System.out.println("Rafael PlayMusicFragmentOnCreate Allbundle " + allBundle.getAllData().toString());
             }
+
         }
         setupAdapter();
     }
@@ -91,7 +95,7 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
         seekBar = layout.findViewById(R.id.seekBar);
         textViewTime = layout.findViewById(R.id.timeTextView);
         albumName = layout.findViewById(R.id.albumName);
-        recyclerViewTopIcons = layout.findViewById(R.id.recyclerViewTopIcons);
+//        recyclerViewTopIcons = layout.findViewById(R.id.recyclerViewTopIcons);
         toolbar = layout.findViewById(R.id.toolbarPlayMusic);
         toolbarTitle = toolbar.findViewById(R.id.toolbarTitle);
         musicName = layout.findViewById(R.id.musicName);
@@ -109,6 +113,7 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
         playIcon.setOnClickListener(OnSingleClickListener.wrap(this));
         replayIcon = layout.findViewById(R.id.replay);
 
+        System.out.println("Rafael PlayMusicFragmentOnCreateView allBundle " + allBundle.getAllData().toString());
         if (allBundle.getAllData().get(position).getPreview() != null && !allBundle.getAllData().get(position).getPreview().isEmpty()) {
             setImageValLayoutBackground(position);
         }
@@ -129,7 +134,7 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         setupToolbar();
-        setupItems();
+//        setupItems();
     }
 
     private void setupToolbar() {
@@ -139,14 +144,14 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
     }
 
     private void setupAdapter() {
-        adapter = new TopMiniIconsMusics(mContext, allBundle.getAllData(), this);
+        adapter = new CustomViewPagerAdapter(mContext, allBundle.getAllData(), allBundle.getPosition());
     }
 
-    private void setupItems() {
-        recyclerViewTopIcons.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false));
-        recyclerViewTopIcons.setHasFixedSize(true);
-        recyclerViewTopIcons.setAdapter(adapter);
-    }
+//    private void setupItems() {
+//        recyclerViewTopIcons.setLayoutManager(new LinearLayoutManager(mContext, LinearLayoutManager.HORIZONTAL, false));
+//        recyclerViewTopIcons.setHasFixedSize(true);
+//        recyclerViewTopIcons.setAdapter(adapter);
+//    }
 
     private void setImageValLayoutBackground(int position) {
         progressBarVisible();
@@ -180,12 +185,15 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
 
 
     private void rotateLayout(ConstraintLayout imageView, int fromDegree, int toDegree, float pivotX, float pivotY, int duraction, int repeatCount) {
-        if (repeatCount == 0) {
-            anim.pause();
-            return;
-        } else if (anim != null) {
-            anim.resume();
-            return;
+        if (anim != null) {
+            if (repeatCount == 0) {
+                anim.pause();
+                return;
+            } else if (anim != null) {
+                anim.resume();
+                mContext.enableInteraction();
+                return;
+            }
         } else {
             anim = ObjectAnimator.ofFloat(imageView, "rotation", fromDegree, toDegree);
             anim.setDuration(duraction);
@@ -193,6 +201,7 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
             anim.setRepeatMode(ObjectAnimator.RESTART);
             anim.setInterpolator(new LinearInterpolator());
             anim.start();
+            mContext.enableInteraction();
         }
     }
 
@@ -257,7 +266,7 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
 
     Runnable runnable = this::updateSeekBar;
 
-    public void onRadioClick() {
+    private void onRadioClick() {
         if (!isPLAYING) {
 
             if (mediaPlayer != null) {
@@ -302,35 +311,35 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
             };
 
             mp3Play.execute(AUDIO_PATH);
+//            mContext.enableInteraction();
             try {
 
                 mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                     @Override
                     public void onPrepared(MediaPlayer mp) {
                         /* show media player layout */
-                        seekBar.setMax(mediaPlayer.getDuration());
-                        updateSeekBar();
+                        seekBar.setMax(mp.getDuration());
+//                        updateSeekBar();
                     }
                 });
 
-                mediaPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                    @Override
-                    public void onCompletion(MediaPlayer mp) {
+                mediaPlayer.setOnCompletionListener(mp -> {
+                    if (mp.isLooping()) {
                         pauseIcon.hide();
                         playIcon.show();
                         isPLAYING = false;
                         stopPlaying();
+                        rotateImage(retro_val_stick, 30, 0, 0.5f, 0f, 300, 0);
+                        rotateLayout(val_Layout, 0, 0, 0.5f, 0.5f, 0, 0);
                         getNextMusic();
-
-
+                    } else {
+                        mp.setLooping(true);
+                        pauseIcon.hide();
+                        playIcon.show();
+                        stopPlaying();
+                        rotateImage(retro_val_stick, 30, 0, 0.5f, 0f, 300, 0);
+                        rotateLayout(val_Layout, 0, 0, 0.5f, 0.5f, 0, 0);
                     }
-                });
-                mediaPlayer.setOnCompletionListener(mp -> {
-                    playIcon.show();
-                    pauseIcon.hide();
-                    rotateImage(retro_val_stick, 30, 0, 0.5f, 0f, 300, 0);
-                    rotateLayout(val_Layout, 0, 0, 0.5f, 0.5f, 0, 0);
-                    getNextMusic();
                 });
             } catch (Exception e) {
                 System.out.println("Rafael cach ");
@@ -402,6 +411,7 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.btn_pause: {
+                System.out.println("v id" + v.getId());
                 mediaPlayer.pause();
                 musicValDefoultView();
                 break;
@@ -412,6 +422,7 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
                 break;
             }
             case R.id.nextMusic: {
+                mContext.disableInteraction();
                 getNextMusic();
                 break;
             }
@@ -423,6 +434,7 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
                 if (allBundle.getAllData().size() < currentPosition) {
                     return;
                 } else {
+                    mContext.disableInteraction();
                     musicValDefoultView();
                     position = currentPosition;
                     isPLAYING = false;
@@ -441,5 +453,14 @@ public class PlayMusicFragment extends Fragment implements View.OnClickListener,
                 break;
             }
         }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        if (mContext != null) {
+            mContext.enableInteraction();
+        }
+        mContext = null;
     }
 }

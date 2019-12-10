@@ -79,9 +79,11 @@ public class MusicItemAdapter extends RecyclerView.Adapter<MusicItemAdapter.Hold
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.music_item: {
+
                     allBundle.setPosition(getAdapterPosition());
                     allBundle.setAllData(allData);
                     listenerRef.get().onPositionClicked(allBundle, "musicItem");
+                    System.out.println("Rafael MusicItemAdapter onclick  allBundle " + allBundle.getAllData().toString());
                     break;
                 }
             }

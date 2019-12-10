@@ -5,6 +5,7 @@ import android.os.Parcelable;
 
 import com.example.onlinemusicappdemo.pojo.AllData;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import lombok.Data;
@@ -12,7 +13,7 @@ import lombok.Data;
 @Data
 public class AllBundle implements Parcelable {
 
-    private List<AllData> allData;
+    private List<AllData> allData = new ArrayList<>();
     private int position;
 
 

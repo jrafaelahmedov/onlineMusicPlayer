@@ -28,6 +28,7 @@ import com.example.onlinemusicappdemo.constant.Constants;
 import com.example.onlinemusicappdemo.lisener.ClickLisener;
 import com.example.onlinemusicappdemo.pojo.AllData;
 import com.example.onlinemusicappdemo.pojo.ResponseBody;
+import com.example.onlinemusicappdemo.utility.CustomViewPagerAdapter;
 import com.wang.avi.AVLoadingIndicatorView;
 
 import java.util.ArrayList;
@@ -45,6 +46,7 @@ public class MusicListFragment extends Fragment implements ClickLisener {
     private MusicItemAdapter adapter;
     private List<AllData> allData = new ArrayList<>();
     private Toolbar toolbar;
+    private AVLoadingIndicatorView progressbarMusicList;
 
 
     @Override
@@ -63,6 +65,7 @@ public class MusicListFragment extends Fragment implements ClickLisener {
         searchMusic = layout.findViewById(R.id.searchMusic);
         toolbar = layout.findViewById(R.id.toolbarMusicPlay);
         toolbarTitle = toolbar.findViewById(R.id.toolbarTitle);
+        progressbarMusicList = layout.findViewById(R.id.progressbarMusicList);
         mContext.setSupportActionBar(toolbar);
         return layout;
     }
@@ -97,6 +100,8 @@ public class MusicListFragment extends Fragment implements ClickLisener {
             @Override
             public boolean onQueryTextSubmit(String s) {
                 getMusicForName(s);
+                progressbarMusicList.setVisibility(View.VISIBLE);
+
 //                adapter.getFilter().filter(s);
                 return false;
             }
@@ -136,13 +141,12 @@ public class MusicListFragment extends Fragment implements ClickLisener {
             public void onResponse(@NonNull Call<ResponseBody> call, @NonNull Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
                     if (response.body() != null) {
-                        System.out.println("Rafael " + response.body());
-//                        allData = response.body().getAllData();
                         if (allData != null) {
                             allData.clear();
                             allData.addAll(response.body().getAllData());
                         }
                         adapter.notifyDataSetChanged();
+                        progressbarMusicList.setVisibility(View.GONE);
                     }
                 }
             }

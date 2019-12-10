@@ -76,6 +76,9 @@ public class TopMiniIconsMusics extends RecyclerView.Adapter<TopMiniIconsMusics.
         public void onClick(View v) {
             switch (v.getId()) {
                 case R.id.music_item: {
+
+                    System.out.println("Rafael PlayMusicFragmentOnCreateView allBundle " + allBundle.getAllData().toString());
+
                     allBundle.setPosition(getAdapterPosition());
                     allBundle.setAllData(allData);
                     listenerRef.get().onPositionClicked(allBundle, "musicItemTopIcon");
